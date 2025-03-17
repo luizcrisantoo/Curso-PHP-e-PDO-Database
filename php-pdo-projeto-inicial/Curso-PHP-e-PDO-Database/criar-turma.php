@@ -7,6 +7,7 @@ use Alura\Pdo\Domain\Model\Student;
 
 require_once 'vendor/autoload.php';
 
+
 $connection = ConnectionCreator::createConnection();
 $studentRepository = new PdoStudentRepository($connection);
 
@@ -28,4 +29,4 @@ $anotherStudent = new Student(
 
 $studentRepository->save($anotherStudent);
 
-$connection->commit();
+$connection->rollBack();

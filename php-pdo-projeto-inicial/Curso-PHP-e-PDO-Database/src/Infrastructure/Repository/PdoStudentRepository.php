@@ -5,6 +5,7 @@ namespace Alura\Pdo\Infrastructure\Repository;
 use Alura\Pdo\Domain\Model\Student;
 use Alura\Pdo\Domain\Repository\StudentRepository;
 use PDO;
+use RuntimeException;
 
 class PdoStudentRepository implements StudentRepository
 {
@@ -14,7 +15,7 @@ class PdoStudentRepository implements StudentRepository
     {
         $this->connection = $connection;
     }
-    
+
     public function allStudents(): array
     {
         $sqlQuery = 'SELECT * FROM students;';
@@ -67,14 +68,15 @@ class PdoStudentRepository implements StudentRepository
 
         $success = $stmt->execute([
             ':name' => $student->name(),
-            ':birth_date' => $student->birthDate()->format(format:'Y-m-d'),
+            ':birth_date' => $student->birthDate()->format('Y-m-d'),
         ]);
 
-        $student->defineId($this->connection->lastInsertId());
+        if ($success) {
+            $student->defineId($this->connection->lastInsertId());
+        }
 
         return $success;
-    }
-
+        }
     public function update(Student $student): bool
     {
         $updateQuery = 'UPDATE students SET name = :name, birth_date = :birth_date WHERE id = :id;';
