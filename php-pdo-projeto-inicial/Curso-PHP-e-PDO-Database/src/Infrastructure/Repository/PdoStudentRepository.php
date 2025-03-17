@@ -4,16 +4,17 @@ namespace Alura\Pdo\Infrastructure\Repository;
 
 use Alura\Pdo\Domain\Model\Student;
 use Alura\Pdo\Domain\Repository\StudentRepository;
+use PDO;
 
 class PdoStudentRepository implements StudentRepository
 {
-    private \PDO $connection;
+    private PDO $connection;
 
-    public function __construct()
+    public function __construct(PDO $connection)
     {
-        $this->connection = ConnectionCreator::createConnection();
+        $this->connection = $connection;
     }
-
+    
     public function allStudents(): array
     {
         $sqlQuery = 'SELECT * FROM students;';
@@ -26,7 +27,7 @@ class PdoStudentRepository implements StudentRepository
     public function studentsBirthAt(\DateTimeInterface $birthDate): array
     {
         $sqlQuery = 'SELECT * FROM students WHERE birth_date = ?;';
-        $stmt = $this->connection->prepare(sqlQuery);
+        $stmt = $this->connection->prepare($sqlQuery);
         $stmt->bindValue(1, $birthDate->format(format:'Y-m-d'));
         $stmt->execute();
 
@@ -69,7 +70,7 @@ class PdoStudentRepository implements StudentRepository
             ':birth_date' => $student->birthDate()->format(format:'Y-m-d'),
         ]);
 
-        $student->defineId($this->connection->lasInsertId());
+        $student->defineId($this->connection->lastInsertId());
 
         return $success;
     }
@@ -88,7 +89,7 @@ class PdoStudentRepository implements StudentRepository
     public function remove(Student $student): bool
     {
         $stmt = $this->connection->prepare('DELETE FROM students WHERE id = ?;');
-        $stmt = bindValue(1, $student->id(), PDO::PARAM_INT);
+        $stmt->bindValue(1, $student->id(), PDO::PARAM_INT);
 
         return $stmt->execute();
     }
